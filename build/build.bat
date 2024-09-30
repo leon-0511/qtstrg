@@ -1,0 +1,1 @@
+g++ -Wall ..\src\main.cc -o ..\bin\main.exe && cls
