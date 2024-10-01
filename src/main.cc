@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     // No arguments? Error & Exit
     if(checkarg(argc, argv) == 1) return 1;
     
-    std::string argument = argv[1];
+    argument = argv[1];
     // --help Argument
     if(argument == "--help") {
         std::cout << helpstr << '\n' << std::endl;
@@ -43,19 +43,39 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    // Change directories argument
     if(argument == "--chdir") {
-        if(chdir(argc, argv)) return 0;
+        if(chdir(argc, argv) == 0) return 0;
         else return 1;
     }
     
-   // Add quote to the quotes.txt 
+   // Add quote to quotes.txt argument
    if(argument == "--add") {
         if(add(argc, argv) == 0) return 0;
         else return 1;
    }
 
+    // Clear the quotes.txt argument
    if(argument == "--clear") {
         if(clear() == 0) return 0;
+        else return 1;
+   }
+
+    // Print current location argument
+   if(argument == "--dir") {
+        std::cout << "Current chosen directory for quotes.txt " << directory << '\n';
+        return 0;
+   }
+
+    // Print current quotes.txt content argument
+   if(argument == "--print") {
+        if(printall() == 0) return 0;
+        else return 1;
+   }
+
+   if(argument == "--index") {
+        if(argv[2] == nullptr) return 1;
+        if(getinx(atoi(argv[2])) == 0) return 0;
         else return 1;
    }
 

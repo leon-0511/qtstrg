@@ -1,5 +1,3 @@
-// Make config txt to keep directory choice through runs
-
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -10,6 +8,7 @@
 #if !defined(QTSTRG)
 #define QTSTRG
 
+std::string argument;
 std::string_view linuxdir = "../data/";
 std::string_view windir = "C:\\Docs\\Qtstrg\\";
 std::string const configdir = "../config/config.cfg";
@@ -75,7 +74,7 @@ bool dirinit() {
 
 // Function that creates the text file (0, correct | 1, Couldn't create file | -1, File already exists)
 int start() {
-    if(!exists(directory + "quotes.txt")) {
+    if(exists(directory + "quotes.txt")) {
         // Error, file already exists
         return -1;
     }
@@ -96,10 +95,18 @@ bool chdir(int argc, char* argv[]) {
             std::cerr << "Incorrect Usage: chdir requires a directory argument (--chdir path/)";
             return 1;
         }
+    directory = argv[2];
     std::ofstream config;
-    config.open(configdir);
-    if(config) {
-        directory = argv[2]; 
+    if(directory == "default") {
+        config.open(configdir, std::ios::out | std::ios::trunc);
+        defaultdir();
+        config << directory;
+        config.close();
+        return 0;
+    }
+    config.open(configdir, std::ios::out | std::ios::trunc);
+    if(config.is_open()) {
+
         config << directory << '\n';
         config.close();
         return 0;
@@ -142,10 +149,50 @@ bool add(int argc, char* argv[]) {
         return 0;
     } else {
         std::cout << "qtstrg> ";
-        std::cin >> input;
+        std::getline(std::cin, input);
         quoteFile << input << "\n\n";
         quoteFile.close();
         return 0;
+    }
+}
+
+bool printall() {
+    std::ifstream quoteFile(directory + "quotes.txt");
+    std::string input;
+    if(quoteFile) {
+        while(std::getline(quoteFile, input)) {
+            std::cout << input << '\n';
+        }
+        return 0;
+    } else {
+        std::cerr << "Couldn't open quotes.txt for print, \
+        it doesn't exist, or not pointing to its current location\n";
+        return 1;
+    }
+}
+
+// Index works correctly, but needs fixing the multilinear string detecting (which is none)
+bool getinx(size_t inx) {
+    // if(inx % 2 == 0) inx++;
+    std::ifstream quoteFile(directory + "quotes.txt");
+    std::string input;
+    size_t count{1};
+    if(quoteFile) {
+        while(std::getline(quoteFile, input)) {
+            if(input.empty()) continue;
+            if(count == inx) {
+                std::cout << input << '\n';
+                return 0;
+            } else {
+                count++;
+            }
+        }
+        std::cerr << "Doesn't exist\n";
+        return 1;
+    } else {
+        std::cerr << "Couldn't open quotes.txt for print, \
+        it doesn't exist, or not pointing to its current location\n";
+        return 1;
     }
 }
 
