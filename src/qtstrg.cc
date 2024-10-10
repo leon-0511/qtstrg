@@ -144,7 +144,7 @@ bool add(int argc, char* argv[]) {
     // Check for commandline input
     if(argc > 2) {
         input = argv[2];
-        quoteFile << input << "\n\n";
+        quoteFile << '\"'<< input << "\"\n\n";
         quoteFile.close();
         return 0;
     } else {
@@ -173,27 +173,60 @@ bool printall() {
 
 // Index works correctly, but needs fixing the multilinear string detecting (which is none)
 bool getinx(size_t inx) {
-    // if(inx % 2 == 0) inx++;
     std::ifstream quoteFile(directory + "quotes.txt");
-    std::string input;
+    std::string quote;
+    std::string line;
     size_t count{1};
-    if(quoteFile) {
-        while(std::getline(quoteFile, input)) {
-            if(input.empty()) continue;
-            if(count == inx) {
-                std::cout << input << '\n';
-                return 0;
-            } else {
-                count++;
-            }
-        }
-        std::cerr << "Doesn't exist\n";
-        return 1;
-    } else {
+    bool inquote = false;
+
+    if(!quoteFile) {
         std::cerr << "Couldn't open quotes.txt for print, \
         it doesn't exist, or not pointing to its current location\n";
         return 1;
     }
+
+    while (std::getline(quoteFile, line)) {
+        // Detect the start of a new quote
+        if (!line.empty() && !inquote) {
+            if (count == inx) {
+                inquote = true;   // Start reading this quote
+                quote += line;    // Add the first line of the quote
+            }
+        }
+        // Continue reading the quote until an empty line is encountered
+        else if (inquote) {
+            if (line.empty()) {
+                inquote = false; // Quote ended
+                break;           // Stop reading after the selected quote
+            } else {
+                quote += "\n" + line; // Append the next line of the quote
+            }
+        }
+
+        // If we finished reading a quote (reached an empty line), increment the quote count
+        if (line.empty() && !inquote) {
+            count++;
+        }
+    }
+
+    quoteFile.close();
+    
+    // Print the quote if found, otherwise indicate no quote found at the index
+    if (!quote.empty()) {
+        if (quote.front() == '"') {
+            quote.erase(0, 1); // Remove the first quote character
+        }
+        if (quote.back() == '"') {
+            quote.pop_back();  // Remove the last quote character
+        }
+        std::cout << quote << std::endl;
+    } else {
+        std::cout << "No quote found at index " << inx << "\n";
+        return false;
+    }
+
+
+    return 0;
 }
 
 #endif // QTSTRG
